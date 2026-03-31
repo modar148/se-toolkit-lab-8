@@ -27,6 +27,9 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv pip install -e ./mcp/mcp-lms
 
 RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install -e ./mcp/mcp-obs
+
+RUN --mount=type=cache,target=/root/.cache/uv \
     uv pip install -e ./nanobot-websocket-channel/nanobot-channel-protocol
 
 RUN --mount=type=cache,target=/root/.cache/uv \
