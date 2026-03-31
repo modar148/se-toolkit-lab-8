@@ -13,10 +13,9 @@ ARG APP_GID=1000
 
 WORKDIR /app
 
-# Copy workspace files (root pyproject.toml, uv.lock, and nanobot/)
-# These come from the 'workspace' additional_contexts in docker-compose.yml
-COPY pyproject.toml uv.lock ./
-COPY nanobot/ ./nanobot/
+# Copy workspace files from the 'workspace' additional_contexts
+COPY --from=workspace pyproject.toml uv.lock ./
+COPY --from=workspace nanobot/ ./nanobot/
 
 # Install all workspace dependencies
 RUN --mount=type=cache,target=/root/.cache/uv \
