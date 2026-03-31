@@ -35,9 +35,11 @@ FROM ${REGISTRY_PREFIX_DOCKER_HUB:-}python:3.14.2-slim-bookworm AS runtime
 ARG APP_UID=1000
 ARG APP_GID=1000
 
-# Create non-root user
-RUN groupadd --system --gid ${APP_GID} nonroot \
-    && useradd --system --gid ${APP_GID} --uid ${APP_UID} --create-home nonroot
+# Create non-root user (skip if running as root with UID 0)
+RUN if [ "${APP_UID}" != "0" ]; then \
+    groupadd --system --gid ${APP_GID} nonroot && \
+    useradd --system --gid ${APP_GID} --uid ${APP_UID} --create-home nonroot; \
+    fi
 
 WORKDIR /app
 
@@ -50,7 +52,7 @@ COPY --chown=nonroot:nonroot --from=builder /app/nanobot /app/nanobot
 # Set PATH to include uv venv
 ENV PATH="/app/.venv/bin:$PATH"
 
-# Switch to non-root user
+# Switch to non-root user (skip if UID is 0)
 USER nonroot
 
 # Run the entrypoint
