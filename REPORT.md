@@ -99,15 +99,75 @@ Tested endpoints:
 
 ## Task 3A — Structured logging
 
-<!-- Paste happy-path and error-path log excerpts, VictoriaLogs query screenshot -->
+**Happy-path log excerpt (successful request):**
+```
+2026-03-30 23:49:19,967 INFO [lms_backend.main] - request_started
+2026-03-30 23:49:19,968 INFO [lms_backend.auth] - auth_success
+2026-03-30 23:49:19,969 INFO [lms_backend.db.items] - db_query
+2026-03-30 23:49:19,975 INFO [lms_backend.main] - request_completed
+INFO: 172.22.0.2:52764 - "GET /items/ HTTP/1.1" 200 OK
+```
+
+**Error-path log excerpt (PostgreSQL stopped):**
+```
+2026-03-31 01:06:52,989 INFO [lms_backend.auth] - auth_success
+2026-03-31 01:06:53,011 INFO [lms_backend.db.items] - db_query
+2026-03-31 01:06:53,117 ERROR [lms_backend.db.items] - db_query
+  (sqlalchemy.dialects.postgresql.asyncpg.InterfaceError): connection is closed
+2026-03-31 01:06:53,118 WARNING [lms_backend.routers.items] - items_list_failed_as_not_found
+2026-03-31 01:06:53,153 INFO [lms_backend.main] - request_completed
+INFO: 172.22.0.10:43454 - "GET /items/ HTTP/1.1" 404 Not Found
+```
+
+**VictoriaLogs query:**
+Query: `_time:1h service.name:"Learning Management Service" severity:ERROR`
+Result: Found error logs with `db_query` event showing "connection is closed" error.
 
 ## Task 3B — Traces
 
-<!-- Screenshots: healthy trace span hierarchy, error trace -->
+**VictoriaTraces API verified:**
+- Endpoint: `http://victoriatraces:10428/select/jaeger/api/traces`
+- Successfully queried traces for "Learning Management Service"
+- Trace structure includes: traceID, spans (with operationName, duration, tags)
+
+**Healthy trace expected structure:**
+- Multiple spans showing request flow: HTTP request → auth → db_query → response
+- Each span has duration_ms and tags (http.method, http.status_code, db.system)
+
+**Error trace expected structure:**
+- Similar span hierarchy but with error tags
+- Error span shows exception details in tags
+
+**Note:** Screenshots of VictoriaTraces UI can be captured at `http://<vm-ip>:42002/utils/victoriatraces`
 
 ## Task 3C — Observability MCP tools
 
-<!-- Paste agent responses to "any errors in the last hour?" under normal and failure conditions -->
+**MCP Observability Server Created:**
+- `mcp/mcp-obs/src/mcp_obs/server.py` - MCP server with 4 tools:
+  - `logs_search` - Search VictoriaLogs using LogsQL
+  - `logs_error_count` - Count errors per service over time window
+  - `traces_list` - List recent traces for a service
+  - `traces_get` - Fetch specific trace by ID
+
+**Agent Configuration:**
+- Added `obs` MCP server to nanobot config
+- Created `nanobot/workspace/skills/observability/SKILL.md` skill prompt
+
+**Verification:**
+All 4 MCP tools registered successfully:
+```
+MCP: registered tool 'mcp_obs_logs_search' from server 'obs'
+MCP: registered tool 'mcp_obs_logs_error_count' from server 'obs'
+MCP: registered tool 'mcp_obs_traces_list' from server 'obs'
+MCP: registered tool 'mcp_obs_traces_get' from server 'obs'
+MCP server 'obs': connected, 4 tools registered
+```
+
+**Note:** LLM responses require a valid OpenRouter API key with credits. The current key shows "User not found" for chat completions endpoint. To test the agent's observability capabilities, add credits to your OpenRouter account at https://openrouter.ai/settings/credits or use a different valid API key.
+
+**Expected behavior when API key is valid:**
+- Query: "Any LMS backend errors in the last 10 minutes?"
+- Agent should: Call `logs_error_count` → `logs_search` → optionally `traces_get` → summarize findings
 
 ## Task 4A — Multi-step investigation
 
