@@ -1,9 +1,10 @@
 # Multi-stage build for nanobot gateway
+# Uses simple COPY without workspace additional_contexts
 ARG REGISTRY_PREFIX_DOCKER_HUB=
 ARG REGISTRY_PREFIX_GHCR=
 
 # ---------------------------------------------------------------------------
-# Stage 1: Builder
+# Stage 1: Builder - install only nanobot dependencies
 # ---------------------------------------------------------------------------
 FROM ${REGISTRY_PREFIX_DOCKER_HUB:-}astral/uv:python3.14-bookworm-slim AS builder
 
@@ -12,17 +13,19 @@ ARG APP_GID=1000
 
 WORKDIR /app
 
-# Copy workspace dependency files first for better caching
-# The 'workspace' additional_contexts makes the repo root available
-COPY --from=workspace pyproject.toml uv.lock /app/
+# Copy only the nanobot project
+COPY nanobot/pyproject.toml nanobot/uv.lock ./
+
+# Install nanobot dependencies
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen
 
 # Copy the nanobot project source
-COPY --from=workspace nanobot/ /app/nanobot/
+COPY nanobot/ ./nanobot/
 
-# Install the nanobot project and any editable dependencies
-# Use --no-install-workspace to skip other workspace members
+# Install the nanobot project itself
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-install-workspace --package nanobot
+    uv sync --frozen
 
 # ---------------------------------------------------------------------------
 # Stage 2: Runtime
