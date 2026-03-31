@@ -171,7 +171,70 @@ MCP server 'obs': connected, 4 tools registered
 
 ## Task 4A — Multi-step investigation
 
-<!-- Paste the agent's response to "What went wrong?" showing chained log + trace investigation -->
+**Planted Bug Found:**
+In `backend/src/lms_backend/routers/items.py`, the `get_items()` function caught all exceptions and returned a misleading 404 "Items not found" instead of surfacing the real database error.
+
+**Original buggy code:**
+```python
+except Exception as exc:
+    logger.warning(
+        "items_list_failed_as_not_found",
+        extra={"event": "items_list_failed_as_not_found"},
+    )
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail="Items not found",
+    ) from exc
+```
+
+**Investigation flow (with PostgreSQL stopped):**
+1. Triggered request: "What labs are available?"
+2. Backend returned: 404 "Items not found" (misleading)
+3. Logs showed: `db_query` ERROR with "connection is closed"
+4. Trace showed: db_query span failed
+
+**Note:** Full agent investigation requires valid OpenRouter API key with credits. The observability tools are configured and registered correctly.
+
+## Task 4B — Proactive health check
+
+**Note:** Requires valid OpenRouter API key for cron-based health checks to work. The cron tool is available in nanobot and the observability MCP tools are registered.
+
+Expected workflow:
+1. Ask agent: "Create a health check for this chat that runs every 2 minutes..."
+2. Agent uses `cron` tool to schedule recurring job
+3. Each run calls `logs_error_count` → `logs_search` → posts summary to chat
+
+## Task 4C — Bug fix and recovery
+
+**Fix applied:**
+Changed the exception handler in `backend/src/lms_backend/routers/items.py`:
+
+```python
+except Exception as exc:
+    logger.error(
+        "items_list_failed",
+        extra={"event": "items_list_failed", "error": str(exc)},
+    )
+    raise HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail=f"Failed to retrieve items: {type(exc).__name__}",
+    ) from exc
+```
+
+**Before fix (with PostgreSQL stopped):**
+```
+curl http://localhost:42002/items/ -H 'Authorization: Bearer lab8-secret-key'
+{"detail":"Items not found"}  # 404 - Misleading!
+```
+
+**After fix (with PostgreSQL stopped):**
+```
+curl http://localhost:42002/items/ -H 'Authorization: Bearer lab8-secret-key'
+{"detail":"Failed to retrieve items: gaierror"}  # 500 - Real error!
+```
+
+**Recovery verification:**
+After restarting PostgreSQL, the system returns to normal operation with proper item listings.
 
 ## Task 4B — Proactive health check
 
