@@ -179,9 +179,13 @@ async def traces_get(
 
 async def main():
     """Run the MCP server."""
-    async with mcp.run_stdio():
-        pass
+    from mcp.server.stdio import stdio_server
+    
+    async with stdio_server() as (read_stream, write_stream):
+        init_options = mcp.create_initialization_options()
+        await mcp.run(read_stream, write_stream, init_options)
 
 
 if __name__ == "__main__":
+    import asyncio
     asyncio.run(main())
