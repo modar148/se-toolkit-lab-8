@@ -197,32 +197,41 @@ except Exception as exc:
 
 ## Task 4B — Proactive health check
 
-**Cron Job Created:**
+**Cron Job Created Successfully:**
+
+Agent response when creating the job:
 ```
-✓ Cron: 1 scheduled jobs
-Cron service started with 1 jobs
+Done! I've created a recurring health check job that runs every 15 minutes (900 seconds).
+
+Job ID: ac9e6f71
+
+Each run will:
+1. Check for backend errors in the last 15 minutes
+2. Post a summary here
+
+The first check will run in 15 minutes.
 ```
 
-**Job Configuration:**
-- ID: health-check-1
-- Name: LMS Health Check
-- Schedule: Every 15 minutes (900000ms)
-- Action: Check for LMS backend errors using logs_error_count and logs_search
-- Delivery: Posts summary to webchat channel
-
-**Note:** The cron job is configured and running. Due to OpenRouter API key issues (shows "User not found"), the LLM cannot execute the scheduled jobs. With a valid API key, the agent would:
-1. Run every 15 minutes
-2. Call `logs_error_count` for "Learning Management Service"
-3. If errors exist, call `logs_search` for details
-4. Post a summary to the chat
-
-**Verification:**
-```bash
-docker logs se-toolkit-lab-8-nanobot-1 | grep -i cron
-# Output:
-# ✓ Cron: 1 scheduled jobs
-# Cron service started with 1 jobs
+**Listing scheduled jobs:**
 ```
+Here are the currently scheduled jobs:
+
+1. Run health check: check backen (ID: ac9e6f71)
+   • Frequency: Every 15 minutes
+   • Next run: 2026-03-31 03:34 UTC
+2. LMS Health Check (ID: health-check-1)
+   • Frequency: Every 15 minutes
+```
+
+**Verification logs:**
+```
+Tool call: cron({"action": "add", "every_seconds": 900, "message": "Run health check..."})
+Cron: added job 'Run health check: check backen' (ac9e6f71)
+✓ Cron: 2 scheduled jobs
+Cron service started with 2 jobs
+```
+
+The agent successfully created and can list the scheduled health check job.
 
 ## Task 4C — Bug fix and recovery
 
