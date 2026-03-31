@@ -8,7 +8,9 @@
       "Bash(git pull *)",
       "Bash(rm *)",
       "Bash(git rm *)",
-      "Bash(scp *)"
+      "Bash(scp *)",
+      "Bash(del *)",
+      "Bash(git reset *)"
     ]
   },
   "$version": 3
