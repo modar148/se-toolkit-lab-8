@@ -1,5 +1,4 @@
 # Multi-stage build for nanobot gateway
-# Nanobot is part of a workspace - uses root uv.lock
 ARG REGISTRY_PREFIX_DOCKER_HUB=
 ARG REGISTRY_PREFIX_GHCR=
 
@@ -19,9 +18,22 @@ COPY --from=workspace nanobot/ ./nanobot/
 COPY --from=workspace mcp/ ./mcp/
 COPY --from=workspace nanobot-websocket-channel/ ./nanobot-websocket-channel/
 
-# Install all workspace dependencies including nanobot and MCP servers
+# Install dependencies from uv.lock (skip workspace members)
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen
+    uv sync --frozen --only-dev
+
+# Install the packages we need as editable installs
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install -e ./mcp/mcp-lms
+
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install -e ./nanobot-websocket-channel/nanobot-channel-protocol
+
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install -e ./nanobot-websocket-channel/mcp-webchat
+
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install -e ./nanobot-websocket-channel/nanobot-webchat
 
 # ---------------------------------------------------------------------------
 # Stage 2: Runtime
