@@ -97,6 +97,12 @@ def main():
         if lms_api_key:
             lms_env["NANOBOT_LMS_API_KEY"] = lms_api_key
 
+    # Observability MCP server (VictoriaLogs + VictoriaTraces)
+    # Always register it if the config has it defined
+    if "obs" in config.get("tools", {}).get("mcpServers", {}):
+        # Keep the obs server configuration from config.json
+        pass
+
     # Write resolved config
     with open(resolved_path, "w") as f:
         json.dump(config, f, indent=2)
