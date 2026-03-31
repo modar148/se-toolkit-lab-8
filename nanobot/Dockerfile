@@ -16,14 +16,12 @@ WORKDIR /app
 # Copy workspace files from the 'workspace' additional_contexts
 COPY --from=workspace pyproject.toml uv.lock ./
 COPY --from=workspace nanobot/ ./nanobot/
+COPY --from=workspace mcp/ ./mcp/
+COPY --from=workspace nanobot-websocket-channel/ ./nanobot-websocket-channel/
 
-# First install just the dependencies (not workspace members)
+# Install all workspace dependencies including nanobot and MCP servers
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --only-dev
-
-# Then install the nanobot package itself
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv pip install -e ./nanobot
+    uv sync --frozen
 
 # ---------------------------------------------------------------------------
 # Stage 2: Runtime
@@ -44,8 +42,12 @@ WORKDIR /app
 # Copy virtual environment from builder
 COPY --from=builder --chown=nonroot:nonroot /app/.venv /app/.venv
 
-# Copy nanobot project
+# Copy nanobot project (config, entrypoint, workspace)
 COPY --chown=nonroot:nonroot --from=builder /app/nanobot /app/nanobot
+
+# Copy MCP servers and websocket channel (needed for runtime)
+COPY --chown=nonroot:nonroot --from=builder /app/mcp /app/mcp
+COPY --chown=nonroot:nonroot --from=builder /app/nanobot-websocket-channel /app/nanobot-websocket-channel
 
 # Set PATH to include uv venv
 ENV PATH="/app/.venv/bin:$PATH"
