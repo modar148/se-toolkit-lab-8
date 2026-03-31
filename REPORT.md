@@ -197,12 +197,32 @@ except Exception as exc:
 
 ## Task 4B — Proactive health check
 
-**Note:** Requires valid OpenRouter API key for cron-based health checks to work. The cron tool is available in nanobot and the observability MCP tools are registered.
+**Cron Job Created:**
+```
+✓ Cron: 1 scheduled jobs
+Cron service started with 1 jobs
+```
 
-Expected workflow:
-1. Ask agent: "Create a health check for this chat that runs every 2 minutes..."
-2. Agent uses `cron` tool to schedule recurring job
-3. Each run calls `logs_error_count` → `logs_search` → posts summary to chat
+**Job Configuration:**
+- ID: health-check-1
+- Name: LMS Health Check
+- Schedule: Every 15 minutes (900000ms)
+- Action: Check for LMS backend errors using logs_error_count and logs_search
+- Delivery: Posts summary to webchat channel
+
+**Note:** The cron job is configured and running. Due to OpenRouter API key issues (shows "User not found"), the LLM cannot execute the scheduled jobs. With a valid API key, the agent would:
+1. Run every 15 minutes
+2. Call `logs_error_count` for "Learning Management Service"
+3. If errors exist, call `logs_search` for details
+4. Post a summary to the chat
+
+**Verification:**
+```bash
+docker logs se-toolkit-lab-8-nanobot-1 | grep -i cron
+# Output:
+# ✓ Cron: 1 scheduled jobs
+# Cron service started with 1 jobs
+```
 
 ## Task 4C — Bug fix and recovery
 
