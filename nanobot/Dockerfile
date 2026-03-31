@@ -1,10 +1,10 @@
 # Multi-stage build for nanobot gateway
-# Uses simple COPY without workspace additional_contexts
+# Nanobot is part of a workspace - uses root uv.lock
 ARG REGISTRY_PREFIX_DOCKER_HUB=
 ARG REGISTRY_PREFIX_GHCR=
 
 # ---------------------------------------------------------------------------
-# Stage 1: Builder - install only nanobot dependencies
+# Stage 1: Builder
 # ---------------------------------------------------------------------------
 FROM ${REGISTRY_PREFIX_DOCKER_HUB:-}astral/uv:python3.14-bookworm-slim AS builder
 
@@ -13,17 +13,12 @@ ARG APP_GID=1000
 
 WORKDIR /app
 
-# Copy only the nanobot project
-COPY nanobot/pyproject.toml nanobot/uv.lock ./
-
-# Install nanobot dependencies
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen
-
-# Copy the nanobot project source
+# Copy workspace files (root pyproject.toml, uv.lock, and nanobot/)
+# These come from the 'workspace' additional_contexts in docker-compose.yml
+COPY pyproject.toml uv.lock ./
 COPY nanobot/ ./nanobot/
 
-# Install the nanobot project itself
+# Install all workspace dependencies
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen
 
