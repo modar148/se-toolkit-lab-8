@@ -16,16 +16,13 @@ WORKDIR /app
 # The 'workspace' additional_contexts makes the repo root available
 COPY --from=workspace pyproject.toml uv.lock /app/
 
-# Sync dependencies (without installing the project itself yet)
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-install-project
-
 # Copy the nanobot project source
 COPY --from=workspace nanobot/ /app/nanobot/
 
 # Install the nanobot project and any editable dependencies
+# Use --no-install-workspace to skip other workspace members
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen
+    uv sync --frozen --no-install-workspace --package nanobot
 
 # ---------------------------------------------------------------------------
 # Stage 2: Runtime
