@@ -175,3 +175,13 @@ async def traces_get(
                 for tag in span.get("tags", [])
             ),
         }
+
+
+async def main():
+    """Run the MCP server."""
+    async with mcp.run_stdio():
+        pass
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
