@@ -1,0 +1,11 @@
+[project]
+name = "nanobot"
+version = "0.1.0"
+description = "Nanobot agent for Lab 8"
+requires-python = ">=3.14"
+dependencies = [
+    "nanobot-ai @ https://github.com/HKUDS/nanobot/archive/e7d371ec1e6531b28898ec2c869ef338e8dd46ec.zip",
+    "mcp-lms @ file:///app/mcp/mcp-lms",
+    "nanobot-webchat @ file:///app/nanobot-websocket-channel/nanobot-webchat",
+    "mcp-webchat @ file:///app/nanobot-websocket-channel/mcp-webchat",
+]
