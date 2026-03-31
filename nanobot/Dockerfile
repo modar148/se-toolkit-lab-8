@@ -13,7 +13,7 @@ ARG APP_GID=1000
 WORKDIR /app
 
 # Copy workspace dependency files first for better caching
-# The 'workspace' additional_contexts makes the repo root available at /workspace
+# The 'workspace' additional_contexts makes the repo root available
 COPY --from=workspace pyproject.toml uv.lock /app/
 
 # Sync dependencies (without installing the project itself yet)
