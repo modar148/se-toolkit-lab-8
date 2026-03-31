@@ -13,14 +13,14 @@ ARG APP_GID=1000
 WORKDIR /app
 
 # Copy workspace dependency files first for better caching
-COPY pyproject.toml uv.lock /app/
+COPY workspace/pyproject.toml workspace/uv.lock /app/
 
 # Sync dependencies (without installing the project itself yet)
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-install-project
 
 # Copy the nanobot project source
-COPY nanobot/ /app/nanobot/
+COPY workspace/nanobot/ /app/nanobot/
 
 # Install the nanobot project and any editable dependencies
 RUN --mount=type=cache,target=/root/.cache/uv \
