@@ -17,9 +17,10 @@ WORKDIR /app
 COPY --from=workspace pyproject.toml uv.lock ./
 COPY --from=workspace nanobot/ ./nanobot/
 
-# Install all workspace dependencies
+# Install workspace dependencies but skip workspace members not in context
+# Only install nanobot package from this workspace
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen
+    uv sync --frozen --no-install-workspace --package nanobot
 
 # ---------------------------------------------------------------------------
 # Stage 2: Runtime
