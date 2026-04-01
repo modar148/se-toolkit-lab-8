@@ -10,7 +10,10 @@
       "Bash(git rm *)",
       "Bash(scp *)",
       "Bash(del *)",
-      "Bash(git reset *)"
+      "Bash(git reset *)",
+      "Bash(type *)",
+      "WebFetch(github.com)",
+      "Bash(su *)"
     ]
   },
   "$version": 3
