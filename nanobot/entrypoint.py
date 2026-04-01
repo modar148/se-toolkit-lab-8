@@ -41,6 +41,20 @@ def main():
     if llm_model:
         config["agents"]["defaults"]["model"] = llm_model
 
+    # Create ~/.nanobot/config.json for nanobot CLI
+    nanobot_config_dir = Path.home() / ".nanobot"
+    nanobot_config_dir.mkdir(parents=True, exist_ok=True)
+    nanobot_config = {
+        "providers": {
+            "custom": {
+                "apiKey": llm_api_key or "sk-lab8-test-key-12345",
+                "apiBase": llm_api_base or "http://qwen-code-api:8080/v1"
+            }
+        }
+    }
+    with open(nanobot_config_dir / "config.json", "w") as f:
+        json.dump(nanobot_config, f, indent=2)
+
     # Gateway settings
     gateway_host = os.environ.get("NANOBOT_GATEWAY_CONTAINER_ADDRESS")
     gateway_port = os.environ.get("NANOBOT_GATEWAY_CONTAINER_PORT")
